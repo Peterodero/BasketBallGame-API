@@ -72,4 +72,31 @@ class ScoreController extends AbstractController
             'leaderboard' => $table
         ]);
     }
+
+    #[Route('/api/score/leaderboard', name: 'score_leaderboard', methods: ['GET'])]
+    public function leaderboard(
+        PlayerRepository $playerRepository
+    ): JsonResponse {
+        // Get top 10 players sorted by highest score
+        $leaderboard = $playerRepository->findBy(
+            [], // No filter conditions
+            ['highestScore' => 'DESC'], // Sort by highest score descending
+            10 // Limit to top 10
+        );
+
+        // Format the response
+        $table = array_map(function ($player, $index) {
+            return [
+                'rank'          => $index + 1,
+                'player_id'     => $player->getId(),
+                'nickname'      => $player->getNickname(),
+                'highest_score' => $player->getHighestScore(),
+            ];
+        }, $leaderboard, array_keys($leaderboard));
+
+        return $this->json([
+            'success'     => true,
+            'leaderboard' => $table
+        ]);
+    }
 }
